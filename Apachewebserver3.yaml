@@ -1,0 +1,41 @@
+---
+Resources:
+  ApacheWebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access on ports 80 and 22
+      GroupName: MyApacheWebServerSG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 96.32.151.128/32
+      Tags:
+        - Key: Name
+          Value: MyApacheWebServerSG
+      VpcId: vpc-08d424ac23d4c52fd
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: subnet-0ad23b55f2dbbac92
+      SecurityGroupIds:
+        - !Ref ApacheWebServerSG
+      KeyName: ApacheWebserver
+      ImageId: ami-0fa49cc9dc8d62c84
+      Tags:
+        - Key: Name
+          Value: MyApacheWebServer
+      UserData:
+        Fn::Base64: | 
+          #!/bin/bash -xe
+          yum update -y # good practice to update existing packages
+          yum install -y httpd # install web server 
+          systemctl start httpd
+          systemctl enable httpd
+          echo "This website was created by Shey Njila using CloudFormation" > /var/www/html/index.html
